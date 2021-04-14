@@ -37,6 +37,17 @@ You need to create a Slack App, a simple application that is used to connect you
 
 Visit [Create a Slack App](https://api.slack.com/apps?new_app=1) to request a new slack app in your workspace. A URL is generated that is required in the next step when we configure some secrets.  You will also need to select the Slack channel that you want to use for the App.
 
+### Create a project
+
+While not technically required, a namespace partitions our objects into their own project making them easier locate and work with.
+
+Clone this repo, then log in to your OpenShift cluster from the command line and run the following command to create a project:
+
+```
+cd config/cicd-slack
+oc apply -f 01a-webhook-to-slack-pipeline-environment.yaml
+```
+
 ### Create secrets
 
 Two secrets are required by this solution:
@@ -50,29 +61,23 @@ So before you can apply the yamls in this repository to your OpenShift cluster, 
 file and add the URL of your SlackApp.
 2. Edit the https://github.com/pamandrejko/tekton-pipeline/blob/main/config/cicd-slack/01c-web-hook-secret-key.yaml file and provide a BASE64 encoded string which you will provide when you configure the webhook on your Git repository. This value is used to secure the communications between your cluster and the webhook.
 
-
-### Create a project
-
-While not technically required, a namespace partitions our objects into their own project making them easier locate and work with.
-
-After logging in to your OpenShift cluster form the command line, run the following command to create a project:
+Run the following commands to create the secrets:
 
 ```
-cd config/cicd-slack
-oc apply -f 01a-webhook-to-slack-pipeline-environment.yaml
+oc apply -f 01b-slack-webhook-secret.yaml
+oc apply -f 01c-web-hook-secret-key.yaml
 ```
-
 
 ## Build the Tekton pipeline
 
-Now we are ready to build the component that form our pileline. We create `yamls` for each component of the pipeline. In total there are six components required:
+Now we are ready to build the components that form our pileline. We create `yamls` for each component of the pipeline. In total there are five components required:
 - Task
 - Pipeline
 - TriggerBinding
 - TriggerTemplate
 - EventListener
 
-Lastly, you need to configure a **webhook** on your GitHub repository. The webhook enables your repository to emit events to your EventListener. Let's walk through these steps.
+Lastly, you need to configure a **Webhook** on your GitHub repository. The webhook enables your repository to emit events to your EventListener. Let's walk through these steps.
 
 ### Create a task
 
@@ -142,8 +147,10 @@ Finally, we tie all of this together with the [EventListener definition](https:/
 
 The EventListener references the TriggerTemplate and the TriggerBinding that we created. The `interceptors:` section filters the events that are emitted to only look at `push` events and also ensures that the events are coming from the correct GitHub repository.
 
-**Reminder:** If you want to try this out with your own repository you need to modify the name of the GitHub repo in this yaml.  Change `body.repository.full_name == 'cloudpakbringup/bringup-site'` to point to your GitHub repo.
-
+**Reminder:** If you want to try this out with your own repository you need to modify the name of the GitHub repo in this yaml.  Change `body.repository.full_name == '<your-github-org-and-repo>'` to point to your GitHub repo. For example:
+```
+body.repository.full_name == 'myorg/myrepo'
+```
 Run the following command to create the EventListener:
 
 ```
