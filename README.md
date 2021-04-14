@@ -191,7 +191,4 @@ At this point your Webhook and Tekton pipeline are configured to post a message 
 
 ## References
 
-Credit goes to Denilson Nastacio for his [GitOps repository](https://github.com/cloudpakbringup/gitops) which provided the basic process and flow for this tutorial.
-
-
 Tekton has excellent examples of [pipelines](https://github.com/tektoncd/pipeline/tree/main/examples), [triggers, templates, and bindings](https://github.com/tektoncd/triggers/tree/main/examples) that are useful when creating your own.
