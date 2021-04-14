@@ -18,7 +18,7 @@ This tutorial assumes you have a basic knowledge of Tekton pipelines, namely tha
 We take that tutorial one step further by adding an EventListener, TriggerBinding, and TriggerTemplate:
 
 
-![Overview diagram](https://github.ibm.com/pama-ibm/tekton-pipeline/blob/master/config/images/Tekton-Pipelines-primer-1.png)
+![Overview diagram](https://github.ibm.com/pamandrejko/tekton-pipeline/blob/main/config/images/Tekton-Pipelines-primer-1.png)
 
 In this example, we monitor for `push` events emitted from a GitHub webhook to an `EventListener` on our OpenShift cluster. The eventlister includes a `TriggerBinding` which defines the data (fields) from the event that we are interested in. It also includes a `TriggerTemplate` which defines what to do when the event is received, in our case to kickoff our pipeline. The pipeline contains a single task that posts a message to slack that includes the name of the commit author.
 
@@ -46,8 +46,8 @@ Two secrets are required by this solution:
 
 So before you can apply the yamls in this repository to your OpenShift cluster, you need to edit the two `yaml` files:
 
-1. Edit the https://github.ibm.com/pama-ibm/tekton-pipeline/blob/master/config/cicd-slack/01b-slack-webhook-secret.yaml file and add the URL of your SlackApp.
-2. Edit the https://github.ibm.com/pama-ibm/tekton-pipeline/blob/master/config/cicd-slack/01c-web-hook-secret-key.yaml file and provide a BASE64 encoded string which you will provide when you configure the webhook on your Git repository. This value is used to secure the communications between your cluster and the webhook  
+1. Edit the https://github.ibm.com/pamandrejko/tekton-pipeline/blob/main/config/cicd-slack/01b-slack-webhook-secret.yaml file and add the URL of your SlackApp.
+2. Edit the https://github.ibm.com/pamandrejko/tekton-pipeline/blob/main/config/cicd-slack/01c-web-hook-secret-key.yaml file and provide a BASE64 encoded string which you will provide when you configure the webhook on your Git repository. This value is used to secure the communications between your cluster and the webhook. 
 
 
 ### Create a project
@@ -75,7 +75,7 @@ Lastly, you need to configure a **webhook** on your GitHub repository. The webho
 
 ### Create a task
 
-We begin by creating a task for our pipeline, namely posting a messsage to Slack. Before you write a new task, check out the [Tekton task catalog](https://github.com/tektoncd/catalog) to see if one already exists for what you want to do. In our case, a task to [post a message to slack](https://raw.githubusercontent.com/tektoncd/catalog/main/task/send-to-webhook-slack/0.1/send-to-webhook-slack.yaml) already exists that we can use. If you examine our [task definition](https://github.ibm.com/pama-ibm/tekton-pipeline/blob/master/config/cicd-slack/02-task-send-to-webhook-slack.yaml) you can see it contains a single step that posts a message to Slack by using the `slack-webhook-secret` which contains the Slack app URL.  
+We begin by creating a task for our pipeline, namely posting a messsage to Slack. Before you write a new task, check out the [Tekton task catalog](https://github.com/tektoncd/catalog) to see if one already exists for what you want to do. In our case, a task to [post a message to slack](https://raw.githubusercontent.com/tektoncd/catalog/main/task/send-to-webhook-slack/0.1/send-to-webhook-slack.yaml) already exists that we can use. If you examine our [task definition](https://github.ibm.com/pamandrejko/tekton-pipeline/blob/main/config/cicd-slack/02-task-send-to-webhook-slack.yaml) you can see it contains a single step that posts a message to Slack by using the `slack-webhook-secret` which contains the Slack app URL.  
 
 Run the following command to create the task:
 
@@ -94,7 +94,7 @@ Check your Slack channel to confirm that the message was posted.
 
 ### Create a pipeline
 
-Next we create the [pipeline](https://github.ibm.com/pama-ibm/tekton-pipeline/blob/master/config/cicd-slack/03-pipeline-post-to-slack-pipeline-with-parms.yaml) which invokes our task. Notice the pipeline definition includes the task name and specifies two parameters: the `slack-webhook-secret` and the contents of the `message` that we want to post to slack.   
+Next we create the [pipeline](https://github.ibm.com/pamandrejko/tekton-pipeline/blob/main/config/cicd-slack/03-pipeline-post-to-slack-pipeline-with-parms.yaml) which invokes our task. Notice the pipeline definition includes the task name and specifies two parameters: the `slack-webhook-secret` and the contents of the `message` that we want to post to slack.   
 
 
 We'd also like that message to include the **name of the person who authored the commit**, a piece of data that is available in the `push` event from the GitHub repo. So we define that `COMMIT_AUTHOR` as a parameter of the pipeline itself, under the `params:` section.
@@ -109,7 +109,7 @@ The pipeline is visible from the OpenShift web console if you navigate to **Pipe
 
 ### Create a TriggerBinding
 
-The trigger binding defines which fields in the GitHub repo event that we are interested in using. Our [example](https://github.ibm.com/pama-ibm/tekton-pipeline/blob/master/config/cicd-slack/04-binding-github-push-binding.yaml) only uses the `body.head_commit.author.name` field from the event. But a few others are included in the binding so that you can see other types of data that are available.
+The trigger binding defines which fields in the GitHub repo event that we are interested in using. Our [example](https://github.ibm.com/pamandrejko/tekton-pipeline/blob/main/config/cicd-slack/04-binding-github-push-binding.yaml) only uses the `body.head_commit.author.name` field from the event. But a few others are included in the binding so that you can see other types of data that are available.
 
 Run the following command to create the TriggerBinding:
 
@@ -121,7 +121,7 @@ The TriggerBinding is visible from the OpenShift web console if you navigate to 
 
 ### Create a TriggerTemplate
 
-The TriggerTemplate launches the pipeline. If you remember the PipelineRun from the HelloWorld tutorial, the TriggerTemplate causes a PipelineRun to occur. In fact, if you examine the [trigger definition](https://github.ibm.com/pama-ibm/tekton-pipeline/blob/master/config/cicd-slack/05-template-github-push-template-with-parms.yaml) you'll notice it contains a `PipelineRun` section. When the trigger fires:
+The TriggerTemplate launches the pipeline. If you remember the PipelineRun from the HelloWorld tutorial, the TriggerTemplate causes a PipelineRun to occur. In fact, if you examine the [trigger definition](https://github.ibm.com/pamandrejko/tekton-pipeline/blob/main/config/cicd-slack/05-template-github-push-template-with-parms.yaml) you'll notice it contains a `PipelineRun` section. When the trigger fires:
 -  A pod is deployed with the name `post-to-slack-pipeline-with-parms-$(uid)` that invokes the task.
 - It extracts the commit author from the event via the `io.openshift.build.commit.author` parameter and passes that to the pipeline using the `COMMIT_AUTHOR` parameter.
 - Notice that the `pipeline` service account is associated with the pod. This is the service account that was created when the Red Hat OpenShift GitOps operator was deployed.
@@ -137,7 +137,7 @@ The TriggerTemplate is visible from the OpenShift web console if you navigate to
 
 ### Create an EventListener
 
-Finally, we tie all of this together with the [EventListener definition](https://github.ibm.com/pama-ibm/tekton-pipeline/blob/master/config/cicd-slack/06-event-listener-webhook-to-slack-pipeline-event-listener.yaml).
+Finally, we tie all of this together with the [EventListener definition](https://github.ibm.com/pamandrejko/tekton-pipeline/blob/main/config/cicd-slack/06-event-listener-webhook-to-slack-pipeline-event-listener.yaml).
 
 The EventListener references the TriggerTemplate and the TriggerBinding that we created. The `interceptors:` section filters the events that are emitted to only look at `push` events and also ensures that the events are coming from the correct GitHub repository.
 
