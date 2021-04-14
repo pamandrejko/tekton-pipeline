@@ -196,6 +196,22 @@ Now we have to tell the webhook where to send the events, the address of our eve
 
 At this point your Webhook and Tekton pipeline are configured to post a message to your slack channel when a commit is made to your GitHub repository.
 
+## Cleanup
+
+Want to try it all again?
+
+Run the following command to delete all of the objects we created:
+```
+cd test
+./delete-config.sh
+```
+
+You can then run all the steps again in sequence  by running the command:
+```
+cd ..
+oc apply -f .
+```
+
 ## References
 
 Tekton has excellent examples of [pipelines](https://github.com/tektoncd/pipeline/tree/main/examples), [triggers, templates, and bindings](https://github.com/tektoncd/triggers/tree/main/examples) that are useful when creating your own.
