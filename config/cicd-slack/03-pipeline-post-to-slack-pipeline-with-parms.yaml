@@ -1,0 +1,19 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: post-to-slack-pipeline-with-parms
+  namespace: webhook-to-slack-pipeline
+spec:
+  params:
+    - name: COMMIT_AUTHOR
+      type: string
+  tasks:
+    - name: send-to-webhook-slack
+      params:
+      - name: slack-webhook-secret
+        value: slack-webhook-secret
+      - name: message
+        value: "Commit submitted by $(params.COMMIT_AUTHOR)"
+      taskRef:
+        name: send-to-webhook-slack

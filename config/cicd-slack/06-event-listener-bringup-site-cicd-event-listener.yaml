@@ -1,0 +1,24 @@
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: webhook-to-slack-pipeline-event-listener
+  namespace: webhook-to-slack-pipeline
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - name: trigger-1
+      bindings:
+        - ref: github-push-binding
+      interceptors:
+        - github:
+            secretRef:
+              secretKey: WebHookSecretKey
+              secretName: web-hook-secret-key
+        - cel:
+            filter: (header.match('X-GitHub-Event', 'push') && body.repository.full_name == '<your-github-org-and-repo>')
+            overlays:
+              - expression: body.ref.split('/')[2]
+                key: ref
+      template:
+        name: github-push-template-trigger-with-parms

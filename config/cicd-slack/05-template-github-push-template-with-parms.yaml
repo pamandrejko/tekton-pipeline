@@ -1,0 +1,35 @@
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: github-push-template-trigger-with-parms
+  namespace: webhook-to-slack-pipeline
+spec:
+  params:
+    - default: master
+      description: The git revision
+      name: io.openshift.build.commit.ref
+    - description: The specific commit SHA
+      name: io.openshift.build.commit.id
+    - description: The git repository url
+      name: gitrepositoryurl
+    - description: The git commit author
+      name: io.openshift.build.commit.author
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        annotations:
+          tekton.dev/git-status: "true"
+          tekton.dev/status-context: post-to-slack-pipeline-with-parms
+          tekton.dev/status-description: Post to slack
+        name: post-to-slack-pipeline-with-parms-$(uid)
+      spec:
+        params:
+        - name: COMMIT_AUTHOR
+          value: $(tt.params.io.openshift.build.commit.author)
+        pipelineRef:
+          name: post-to-slack-pipeline-with-parms
+        serviceAccountName: pipeline
+      status: {}
+status: {}
