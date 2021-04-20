@@ -21,4 +21,3 @@ spec:
       value: $(body.head_commit.message)
     - name: io.openshift.build.commit.author
       value: $(body.head_commit.author.name)
-status: {}
